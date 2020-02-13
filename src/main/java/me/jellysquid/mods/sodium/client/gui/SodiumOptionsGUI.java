@@ -33,7 +33,7 @@ public class SodiumOptionsGUI extends Screen {
 
     private OptionPage currentPage;
 
-    private FlatButtonWidget applyButton, resetButton, closeButton;
+    private FlatButtonWidget applyButton, resetButton, closeButton, vanillaButton;
 
     public SodiumOptionsGUI(Screen prevScreen) {
         super(new TranslatableText("Sodium Options"));
@@ -77,9 +77,11 @@ public class SodiumOptionsGUI extends Screen {
 
         this.applyButton = new FlatButtonWidget(new Rect2i(10, this.height - 30, 80, 20), "Apply", this::applyChanges);
         this.closeButton = new FlatButtonWidget(new Rect2i(96, this.height - 30, 80, 20), "Close", this::popScreen);
+        this.vanillaButton = new FlatButtonWidget(new Rect2i(182, this.height - 30, 80, 20), "Vanilla", this::openVanillaSettings);
 
         this.children.add(this.applyButton);
         this.children.add(this.closeButton);
+        this.children.add(this.vanillaButton);
 
         this.resetButton = new FlatButtonWidget(new Rect2i(this.width - 96, this.height - 30, 80, 20), "Reset", this::resetChanges);
 
@@ -243,10 +245,15 @@ public class SodiumOptionsGUI extends Screen {
         MinecraftClient.getInstance().openScreen(this.prevScreen);
     }
 
+    private void openVanillaSettings()
+    {
+        MinecraftClient.getInstance().openScreen(new VideoOptionsScreen(this.prevScreen, MinecraftClient.getInstance().options));
+    }
+
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (keyCode == GLFW.GLFW_KEY_P && (modifiers & GLFW.GLFW_MOD_SHIFT) != 0) {
-            MinecraftClient.getInstance().openScreen(new VideoOptionsScreen(this.prevScreen, MinecraftClient.getInstance().options));
+            openVanillaSettings();
 
             return true;
         }
