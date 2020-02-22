@@ -94,6 +94,16 @@ public class SodiumGameOptionPages {
                         .setBinding((opts, value) -> opts.particles = value, (opts) -> opts.particles)
                         .setImpact(OptionImpact.MEDIUM)
                         .build())
+                .add(OptionImpl.createBuilder(int.class, vanillaOpts)
+                        .setName("GUI scale")
+                        .setTooltip("Controls the size of the User interface.")
+                        .setControl(opt -> new SliderControl(opt, 1, 8, 1, ControlValueFormatter.number
+                        ()))
+                        .setBinding((opts, value) -> {
+                                opts.guiScale = value;
+
+                        }, (opts) -> opts.guiScale)
+                        .build())
                 .build());
 
         groups.add(OptionGroup.createBuilder()
