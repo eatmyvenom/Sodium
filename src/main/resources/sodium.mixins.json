@@ -23,6 +23,7 @@
         "options.MixinRenderLayers",
         "options.MixinSettingsScreen",
         "options.MixinWorldRenderer",
+        "options.static_fov.MixinGameRenderer",
         "pipeline.MixinBakedQuad",
         "pipeline.MixinBufferBuilder",
         "render_layers.MixinRenderLayers",
