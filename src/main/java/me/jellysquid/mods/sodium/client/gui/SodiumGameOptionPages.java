@@ -79,7 +79,7 @@ public class SodiumGameOptionPages {
                 .add(OptionImpl.createBuilder(int.class, vanillaOpts)
                         .setName("Brightness")
                         .setTooltip("Controls the brightness (gamma) of the game.")
-                        .setControl(opt -> new SliderControl(opt, 0, 100, 1, ControlValueFormatter.percentage()))
+                        .setControl(opt -> new SliderControl(opt, 0, 1000, 1, ControlValueFormatter.percentage()))
                         .setBinding((opts, value) -> opts.gamma = value * 0.01D, (opts) -> (int) (opts.gamma / 0.01D))
                         .build())
                 .add(OptionImpl.createBuilder(boolean.class, sodiumOpts)
@@ -110,6 +110,12 @@ public class SodiumGameOptionPages {
                         .setTooltip("Controls where the Attack Indicator is displayed on screen.")
                         .setControl(opts -> new CyclingControl<>(opts, AttackIndicator.values(), new String[] { "Off", "Crosshair", "Hotbar" }))
                         .setBinding((opts, value) -> opts.attackIndicator = value, (opts) -> opts.attackIndicator)
+                        .build())
+                .add(OptionImpl.createBuilder(boolean.class, sodiumOpts)
+                        .setName("Static Fov")
+                        .setTooltip("If enabled, the field of view will not change in response to potion effects or sprinting.")
+                        .setControl(TickBoxControl::new)
+                        .setBinding((opts, value) -> opts.quality.staticFov = value, (opts) -> opts.quality.staticFov)
                         .build())
                 .build());
 
@@ -187,8 +193,15 @@ public class SodiumGameOptionPages {
                         .setImpact(OptionImpact.MEDIUM)
                         .setFlags(OptionFlag.REQUIRES_ASSET_RELOAD)
                         .build())
+                .add(OptionImpl.createBuilder(boolean.class, sodiumOpts)
+                        .setName("Hurt Cam")
+                        .setTooltip("If enabled, the players view will bob when they take damage.")
+                        .setControl(TickBoxControl::new)
+                        .setBinding((opts, value) -> opts.quality.enableHurtCam = value, opts -> opts.quality.enableHurtCam)
+                        .setImpact(OptionImpact.LOW)
+                        .build())
                 .build());
-
+        
 
         return new OptionPage("Quality", ImmutableList.copyOf(groups));
     }
