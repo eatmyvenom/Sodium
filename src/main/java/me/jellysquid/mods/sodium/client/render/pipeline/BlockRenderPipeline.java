@@ -1,7 +1,7 @@
 package me.jellysquid.mods.sodium.client.render.pipeline;
 
 import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
-import me.jellysquid.mods.sodium.client.render.chunk.ChunkMeshInfo;
+import me.jellysquid.mods.sodium.client.render.chunk.ChunkRenderData;
 import me.jellysquid.mods.sodium.client.render.light.LightPipeline;
 import me.jellysquid.mods.sodium.client.render.light.LightResult;
 import me.jellysquid.mods.sodium.client.render.light.cache.LightDataCache;
@@ -48,7 +48,7 @@ public class BlockRenderPipeline {
         this.cachedColors.defaultReturnValue(Integer.MIN_VALUE);
     }
 
-    public boolean renderModel(ChunkMeshInfo.Builder meshInfo, BlockRenderView world, BakedModel model, BlockState state, BlockPos pos, ModelQuadTransformer quadTransformer, VertexConsumer builder, boolean cull, Random random, long seed) {
+    public boolean renderModel(ChunkRenderData.Builder meshInfo, BlockRenderView world, BakedModel model, BlockState state, BlockPos pos, ModelQuadTransformer quadTransformer, VertexConsumer builder, boolean cull, Random random, long seed) {
         LightPipeline lighter = this.getLightPipeline(state, model);
         lighter.reset();
 
@@ -68,7 +68,7 @@ public class BlockRenderPipeline {
             }
 
             if (!cull || this.occlusionCache.shouldDrawSide(state, world, pos, dir)) {
-                this.renderQuadList(meshInfo, world, state, pos, lighter, quadTransformer, offset, builder, sided, dir);
+                this.renderQuadList(meshInfo, world, state, pos, lighter, quadTransformer, offset, builder, sided);
 
                 rendered = true;
             }
@@ -79,7 +79,7 @@ public class BlockRenderPipeline {
         List<BakedQuad> all = model.getQuads(state, null, random);
 
         if (!all.isEmpty()) {
-            this.renderQuadList(meshInfo, world, state, pos, lighter, quadTransformer, offset, builder, all, null);
+            this.renderQuadList(meshInfo, world, state, pos, lighter, quadTransformer, offset, builder, all);
 
             rendered = true;
         }
@@ -87,7 +87,7 @@ public class BlockRenderPipeline {
         return rendered;
     }
 
-    private void renderQuadList(ChunkMeshInfo.Builder meshInfo, BlockRenderView world, BlockState state, BlockPos pos, LightPipeline lighter, ModelQuadTransformer quadTransformer, Vec3d offset, VertexConsumer builder, List<BakedQuad> quads, Direction dir) {
+    private void renderQuadList(ChunkRenderData.Builder meshInfo, BlockRenderView world, BlockState state, BlockPos pos, LightPipeline lighter, ModelQuadTransformer quadTransformer, Vec3d offset, VertexConsumer builder, List<BakedQuad> quads) {
         for (BakedQuad quad : quads) {
             LightResult light = this.cachedLightResult;
             lighter.apply((ModelQuadView) quad, pos, light);
