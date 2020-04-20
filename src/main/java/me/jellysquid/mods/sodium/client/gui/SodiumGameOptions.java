@@ -25,6 +25,7 @@ public class SodiumGameOptions {
         public boolean useImmutableStorage = true;
         public boolean useRenderLayerConsolidation = true;
         public boolean useParticleCulling = true;
+        public boolean useCompactVertexFormat = true;
     }
 
     public static class QualitySettings {
@@ -38,6 +39,7 @@ public class SodiumGameOptions {
         public boolean enableClouds = true;
 
         public LightingQuality smoothLighting = LightingQuality.HIGH;
+        public int biomeBlendDistance = 3;
     }
 
     public enum DefaultGraphicsQuality implements TextProvider {

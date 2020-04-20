@@ -1,6 +1,6 @@
 package me.jellysquid.mods.sodium.client.render.backends.shader.vbo;
 
-import me.jellysquid.mods.sodium.client.gl.attribute.GlAttributeBinding;
+import me.jellysquid.mods.sodium.client.gl.attribute.GlVertexAttributeBinding;
 import me.jellysquid.mods.sodium.client.gl.buffer.GlBuffer;
 import me.jellysquid.mods.sodium.client.render.backends.ChunkRenderState;
 import net.minecraft.client.util.math.Vector3d;
@@ -8,19 +8,17 @@ import org.lwjgl.opengl.GL20;
 
 public class ShaderVBORenderState implements ChunkRenderState {
     private final GlBuffer buffer;
-    private final GlAttributeBinding[] attributes;
     private final Vector3d translation;
 
-    public ShaderVBORenderState(GlBuffer buffer, GlAttributeBinding[] attributes, Vector3d translation) {
+    public ShaderVBORenderState(GlBuffer buffer, Vector3d translation) {
         this.translation = translation;
         this.buffer = buffer;
-        this.attributes = attributes;
     }
 
-    public void bind() {
+    public void bind(GlVertexAttributeBinding[] attributes) {
         this.buffer.bind();
 
-        for (GlAttributeBinding binding : this.attributes) {
+        for (GlVertexAttributeBinding binding : attributes) {
             GL20.glVertexAttribPointer(binding.index, binding.count, binding.format, binding.normalized, binding.stride, binding.pointer);
         }
     }
