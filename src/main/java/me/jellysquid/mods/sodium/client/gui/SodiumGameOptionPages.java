@@ -1,7 +1,6 @@
 package me.jellysquid.mods.sodium.client.gui;
 
 import com.google.common.collect.ImmutableList;
-import me.jellysquid.mods.sodium.client.gl.SodiumVertexFormats;
 import me.jellysquid.mods.sodium.client.gl.array.GlVertexArray;
 import me.jellysquid.mods.sodium.client.gl.buffer.GlImmutableBuffer;
 import me.jellysquid.mods.sodium.client.gui.options.*;
@@ -12,6 +11,7 @@ import me.jellysquid.mods.sodium.client.gui.options.control.SliderControl;
 import me.jellysquid.mods.sodium.client.gui.options.control.TickBoxControl;
 import me.jellysquid.mods.sodium.client.gui.options.storage.MinecraftOptionsStorage;
 import me.jellysquid.mods.sodium.client.gui.options.storage.SodiumOptionsStorage;
+import me.jellysquid.mods.sodium.client.render.backends.shader.lcb.ShaderLCBChunkRenderBackend;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.options.AttackIndicator;
 import net.minecraft.client.options.ParticlesOption;
@@ -163,7 +163,7 @@ public class SodiumGameOptionPages {
                         .setName("Biome Blend")
                         .setTooltip("Controls the range which biomes will be sampled for block colorization. " +
                                 "Higher values greatly increase the amount of time it takes to build chunks for diminishing improvements in quality.")
-                        .setControl(option -> new SliderControl(option, 1, 7, 2, ControlValueFormatter.quanity("blocks")))
+                        .setControl(option -> new SliderControl(option, 0, 7, 1, ControlValueFormatter.quantityOrDisabled("block(s)", "None")))
                         .setBinding((opts, value) -> opts.quality.biomeBlendDistance = value, opts -> opts.quality.biomeBlendDistance)
                         .setImpact(OptionImpact.LOW)
                         .setFlags(OptionFlag.REQUIRES_RENDERER_RELOAD)
@@ -207,11 +207,23 @@ public class SodiumGameOptionPages {
 
         groups.add(OptionGroup.createBuilder()
                 .add(OptionImpl.createBuilder(boolean.class, sodiumOpts)
+                        .setName("Large Chunk Buffers")
+                        .setTooltip("If enabled, chunks will be batched into larger vertex buffers to avoid expensive state changes. This will greatly " +
+                                "reduce the amount of work the CPU needs to perform, but will not necessarily improve the average frame rate if the GPU " +
+                                "cannot keep up." +
+                                "\n\nRequires OpenGL 3.1+ or support for the ARB_vertex_array_object and ARB_copy_buffer extensions.")
+                        .setControl(TickBoxControl::new)
+                        .setBinding((opts, value) -> opts.performance.useLargeBuffers = value, opts -> opts.performance.useLargeBuffers)
+                        .setImpact(OptionImpact.EXTREME)
+                        .setFlags(OptionFlag.REQUIRES_RENDERER_RELOAD)
+                        .setEnabled(ShaderLCBChunkRenderBackend.isSupported())
+                        .build())
+                .add(OptionImpl.createBuilder(boolean.class, sodiumOpts)
                         .setName("Advanced Entity Culling")
                         .setTooltip("If enabled, a secondary culling pass will be performed before attempting to render an entity. This additional pass " +
                                 "takes into account the current set of visible chunks and removes entities which are not in any visible chunks.")
                         .setControl(TickBoxControl::new)
-                        .setImpact(OptionImpact.HIGH)
+                        .setImpact(OptionImpact.MEDIUM)
                         .setBinding((opts, value) -> opts.performance.useAdvancedEntityCulling = value, opts -> opts.performance.useAdvancedEntityCulling)
                         .build()
                 )
@@ -245,22 +257,11 @@ public class SodiumGameOptionPages {
                         .setFlags(OptionFlag.REQUIRES_RENDERER_RELOAD)
                         .build())
                 .add(OptionImpl.createBuilder(boolean.class, sodiumOpts)
-                        .setName("Large Chunk Buffers")
-                        .setTooltip("If enabled, chunks will be batched into larger vertex buffers to avoid expensive buffer switches while rendering chunks. " +
-                                "This can provide a huge boost at high render distances when CPU-bound." +
-                                "\n\nRequires OpenGL 3.1+ or support for the ARB_copy_buffer extension.")
-                        .setControl(TickBoxControl::new)
-                        .setBinding((opts, value) -> opts.performance.useLargeBuffers = value, opts -> opts.performance.useLargeBuffers)
-                        .setImpact(OptionImpact.HIGH)
-                        .setFlags(OptionFlag.REQUIRES_RENDERER_RELOAD)
-                        .setEnabled(false)
-                        .build())
-                .add(OptionImpl.createBuilder(boolean.class, sodiumOpts)
                         .setName("Animate Only Visible Textures")
                         .setTooltip("If enabled, only animated textures determined to be visible will be updated. This can provide a significant boost to frame " +
                                 "rates on some hardware. If you experience issues with some textures not being animated, disable this option.")
                         .setControl(TickBoxControl::new)
-                        .setImpact(OptionImpact.HIGH)
+                        .setImpact(OptionImpact.MEDIUM)
                         .setBinding((opts, value) -> opts.performance.animateOnlyVisibleTextures = value, opts -> opts.performance.animateOnlyVisibleTextures)
                         .build()
                 )
@@ -271,18 +272,6 @@ public class SodiumGameOptionPages {
                         .setControl(TickBoxControl::new)
                         .setImpact(OptionImpact.MEDIUM)
                         .setBinding((opts, value) -> opts.performance.useParticleCulling = value, opts -> opts.performance.useParticleCulling)
-                        .build()
-                )
-                .add(OptionImpl.createBuilder(boolean.class, sodiumOpts)
-                        .setName("Use Compact Vertex Format")
-                        .setTooltip("If enabled, a more compact vertex format will be used for chunk data. This option may break certain mods which expect " +
-                                "a specific vertex format, but will reduce graphics memory usage and bandwidth requirements by nearly 40% for rendered chunk data.\n\n" +
-                                "Requires OpenGL 3.0+.")
-                        .setControl(TickBoxControl::new)
-                        .setImpact(OptionImpact.HIGH)
-                        .setBinding((opts, value) -> opts.performance.useCompactVertexFormat = value, opts -> opts.performance.useCompactVertexFormat)
-                        .setFlags(OptionFlag.REQUIRES_RENDERER_RELOAD)
-                        .setEnabled(SodiumVertexFormats.CHUNK_MESH_HFP.isSupported())
                         .build()
                 )
                 .build());

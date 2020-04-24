@@ -26,14 +26,14 @@ import java.util.Iterator;
 
 public abstract class AbstractShaderChunkRenderBackend<T extends ChunkRenderState> extends AbstractChunkRenderBackend<T> {
     private final EnumMap<FogMode, ChunkShader> shaders = new EnumMap<>(FogMode.class);
-    private final GlVertexFormat<ChunkMeshAttribute> format;
 
-    protected ChunkShader activeProgram;
+    protected final GlVertexFormat<ChunkMeshAttribute> vertexFormat;
     protected final boolean useImmutableStorage;
 
-    public AbstractShaderChunkRenderBackend(GlVertexFormat<ChunkMeshAttribute> format) {
+    protected ChunkShader activeProgram;
 
-        this.format = format;
+    public AbstractShaderChunkRenderBackend(GlVertexFormat<ChunkMeshAttribute> format) {
+        this.vertexFormat = format;
         this.useImmutableStorage = GlImmutableBuffer.isSupported() && SodiumClientMod.options().performance.useImmutableStorage;
 
         this.shaders.put(FogMode.NONE, createShader(format, FogMode.NONE));
@@ -71,8 +71,8 @@ public abstract class AbstractShaderChunkRenderBackend<T extends ChunkRenderStat
 
             for (ChunkMesh mesh : data.getMeshes()) {
                 GlBuffer buffer = this.createBuffer();
-                buffer.bind();
-                buffer.upload(mesh.takePendingUpload());
+                buffer.bind(GL15.GL_ARRAY_BUFFER);
+                buffer.upload(GL15.GL_ARRAY_BUFFER, mesh.takePendingUpload());
 
                 lastBuffer = buffer;
 
@@ -81,12 +81,12 @@ public abstract class AbstractShaderChunkRenderBackend<T extends ChunkRenderStat
         }
 
         if (lastBuffer != null) {
-            lastBuffer.unbind();
+            lastBuffer.unbind(GL15.GL_ARRAY_BUFFER);
         }
     }
 
     private GlBuffer createBuffer() {
-        return this.useImmutableStorage ? new GlImmutableBuffer(GL15.GL_ARRAY_BUFFER) : new GlMutableBuffer(GL15.GL_ARRAY_BUFFER);
+        return this.useImmutableStorage ? new GlImmutableBuffer(0) : new GlMutableBuffer(GL15.GL_STATIC_DRAW);
     }
 
     @Override
@@ -116,6 +116,6 @@ public abstract class AbstractShaderChunkRenderBackend<T extends ChunkRenderStat
 
     @Override
     public GlVertexFormat<ChunkMeshAttribute> getVertexFormat() {
-        return this.format;
+        return this.vertexFormat;
     }
 }

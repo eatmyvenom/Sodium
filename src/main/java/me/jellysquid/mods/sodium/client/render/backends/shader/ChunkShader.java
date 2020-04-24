@@ -5,8 +5,8 @@ import me.jellysquid.mods.sodium.client.gl.attribute.GlVertexAttributeBinding;
 import me.jellysquid.mods.sodium.client.gl.attribute.GlVertexFormat;
 import me.jellysquid.mods.sodium.client.gl.shader.GlShaderProgram;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.client.util.math.Vector3d;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.ChunkSectionPos;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.system.MemoryStack;
@@ -16,6 +16,8 @@ import java.nio.FloatBuffer;
 import java.util.function.Function;
 
 public class ChunkShader extends GlShaderProgram {
+    private static final float MODEL_SIZE = 16.0f;
+
     private final int uModelViewMatrix;
     private final int uProjectionMatrix;
     private final int uModelOffset;
@@ -71,20 +73,27 @@ public class ChunkShader extends GlShaderProgram {
         }
     }
 
-    public void setModelMatrix(MatrixStack.Entry matrices) {
+    public void setModelMatrix(MatrixStack matrixStack, double x, double y, double z) {
+        matrixStack.push();
+        matrixStack.translate(-x, -y, -z);
+
+        MatrixStack.Entry entry = matrixStack.peek();
+
         try (MemoryStack stack = MemoryStack.stackPush()) {
             FloatBuffer bufModelView = stack.mallocFloat(16);
-            matrices.getModel().writeToBuffer(bufModelView);
+            entry.getModel().writeToBuffer(bufModelView);
 
             GL20.glUniformMatrix4fv(this.uModelViewMatrix, false, bufModelView);
         }
+
+        matrixStack.pop();
     }
 
-    public void setModelOffset(Vector3d translation, double x, double y, double z) {
+    public void setModelOffset(ChunkSectionPos pos, int offsetX, int offsetY, int offsetZ) {
         FloatBuffer buf = this.uModelOffsetBuffer;
-        buf.put(0, (float) (translation.x - x));
-        buf.put(1, (float) (translation.y - y));
-        buf.put(2, (float) (translation.z - z));
+        buf.put(0, (pos.getX() - offsetX) * MODEL_SIZE);
+        buf.put(1, (pos.getY() - offsetY) * MODEL_SIZE);
+        buf.put(2, (pos.getZ() - offsetZ) * MODEL_SIZE);
 
         GL20.glUniform3fv(this.uModelOffset, buf);
     }
